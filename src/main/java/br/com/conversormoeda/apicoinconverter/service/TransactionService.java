@@ -31,7 +31,7 @@ public class TransactionService implements ITransactionService{
 
     @SuppressWarnings("unused")
     @Autowired
-    private ITransactionRepository ITransactionRepository;
+    private ITransactionRepository transactionRepository;
 
     @SuppressWarnings("unused")
     @Autowired
@@ -70,7 +70,7 @@ public class TransactionService implements ITransactionService{
      * @return {@link Transaction}
      */
     private Transaction save(final Transaction transaction){
-        return this.ITransactionRepository.save(transaction);
+        return this.transactionRepository.save(transaction);
     }
 
     /**
