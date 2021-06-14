@@ -4,6 +4,8 @@ import br.com.conversormoeda.apicoinconverter.model.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+
 /**
  * Repository for to manipulate data of transaction
  *
@@ -16,7 +18,7 @@ public interface ITransactionRepository extends JpaRepository<Transaction, Integ
      * Find information of transaction by user Id
      *
      * @param userId - User Id
-     * @return {@link Transaction}
+     * @return {@link Collection<Transaction>}
      */
-    Transaction findByUserId(final Integer userId);
+    Collection<Transaction> findByUserId(final Integer userId);
 }

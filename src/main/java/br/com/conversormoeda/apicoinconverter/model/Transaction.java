@@ -1,10 +1,7 @@
 package br.com.conversormoeda.apicoinconverter.model;
 
 import br.com.conversormoeda.apicoinconverter.enums.ECoin;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -22,6 +19,8 @@ import java.time.LocalDateTime;
 @Data
 @ToString
 @EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 public class Transaction {
 
