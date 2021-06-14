@@ -7,6 +7,8 @@ import br.com.conversormoeda.apicoinconverter.repository.ITransactionRepository;
 import br.com.conversormoeda.apicoinconverter.security.BadRequestException;
 import br.com.conversormoeda.apicoinconverter.util.DateUtil;
 import br.com.conversormoeda.apicoinconverter.validator.TransactionValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -31,6 +33,8 @@ public class TransactionService implements ITransactionService{
     private static final String API_URL = "http://api.exchangeratesapi.io/v1/latest?access_key=".concat(API_KEY)
             .concat(API_PARAM_DEFAULT);
 
+    Logger logger = LoggerFactory.getLogger(TransactionService.class);
+
     @SuppressWarnings("unused")
     @Autowired
     private ITransactionRepository transactionRepository;
@@ -45,6 +49,7 @@ public class TransactionService implements ITransactionService{
 
     @Override
     public TransactionFinalDTO processTransactionDTO(final Integer idUser, final String coinDestiny, final BigDecimal value) {
+        logger.info("Process to generate transaction by API started");
         ResponseEntity<MonetaryRateDTO> responseEntity = this.obtainResponseMonetaryRate();
 
         if(!HttpStatus.OK.equals(responseEntity.getStatusCode())) {
@@ -67,6 +72,7 @@ public class TransactionService implements ITransactionService{
 
     @Override
     public Collection<TransactionFinalDTO> getAllTransactionByUserId(Integer idUser) {
+        logger.info("Process to find all transactions by user");
         final Collection<Transaction> transaction = this.transactionRepository.findByUserId(idUser);
 
         if (transaction.isEmpty()) {
@@ -85,6 +91,7 @@ public class TransactionService implements ITransactionService{
      * @return {@link Transaction}
      */
     private Transaction save(final Transaction transaction){
+        logger.info("Process to save the transaction");
         return this.transactionRepository.save(transaction);
     }
 

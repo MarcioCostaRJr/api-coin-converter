@@ -1,8 +1,11 @@
 package br.com.conversormoeda.apicoinconverter.controller;
 
 import br.com.conversormoeda.apicoinconverter.dto.TransactionFinalDTO;
+import br.com.conversormoeda.apicoinconverter.model.Transaction;
 import br.com.conversormoeda.apicoinconverter.security.BadRequestException;
 import br.com.conversormoeda.apicoinconverter.service.ITransactionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +26,10 @@ import java.util.Objects;
 @RequestMapping({"/transaction"})
 public class TransactionController {
 
+    private static final String NAME_CLASS = Transaction.class.getSimpleName();
+
+    Logger logger = LoggerFactory.getLogger(TransactionController.class);
+
     @SuppressWarnings("unused")
     @Autowired
     private ITransactionService transactionService;
@@ -33,12 +40,14 @@ public class TransactionController {
                                                         final @PathVariable BigDecimal value) throws BadRequestException {
 
         try {
+            logger.info("Coin converter for transaction DTO");
             final TransactionFinalDTO transactionFinalDTO = this.transactionService.processTransactionDTO(idUser, coinDestiny, value);
 
             return Objects.isNull(transactionFinalDTO)
                     ? ResponseEntity.badRequest().build()
                     : ResponseEntity.ok(transactionFinalDTO);
         } catch (BadRequestException badEx) {
+            logger.error(NAME_CLASS.concat(" - ").concat(badEx.getMessage()));
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, badEx.getMessage(), badEx);
         }
     }
@@ -46,6 +55,7 @@ public class TransactionController {
     @GetMapping("/{idUser}")
     public ResponseEntity<Collection<TransactionFinalDTO>> getAllTransactionByUser(final @PathVariable Integer idUser) {
         try {
+            logger.info("Get all transaction by user");
             final Collection<TransactionFinalDTO> collectionTransactionUser =
                     this.transactionService.getAllTransactionByUserId(idUser);
 
@@ -53,6 +63,7 @@ public class TransactionController {
                     ? ResponseEntity.badRequest().build()
                     : ResponseEntity.ok(collectionTransactionUser);
         } catch (BadRequestException badEx) {
+            logger.error(NAME_CLASS.concat(" - ").concat(badEx.getMessage()));
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, badEx.getMessage(), badEx);
         }
     }
