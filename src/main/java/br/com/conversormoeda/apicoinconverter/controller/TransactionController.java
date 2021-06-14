@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -38,7 +39,21 @@ public class TransactionController {
                     ? ResponseEntity.badRequest().build()
                     : ResponseEntity.ok(transactionFinalDTO);
         } catch (BadRequestException badEx) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "badEx.getMessage()", badEx);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, badEx.getMessage(), badEx);
+        }
+    }
+
+    @GetMapping("/{idUser}")
+    public ResponseEntity<Collection<TransactionFinalDTO>> getAllTransactionByUser(final @PathVariable Integer idUser) {
+        try {
+            final Collection<TransactionFinalDTO> collectionTransactionUser =
+                    this.transactionService.getAllTransactionByUserId(idUser);
+
+            return collectionTransactionUser.isEmpty()
+                    ? ResponseEntity.badRequest().build()
+                    : ResponseEntity.ok(collectionTransactionUser);
+        } catch (BadRequestException badEx) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, badEx.getMessage(), badEx);
         }
     }
 }
