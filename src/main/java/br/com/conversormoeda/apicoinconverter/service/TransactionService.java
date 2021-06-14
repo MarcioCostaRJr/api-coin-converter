@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * Service for to direction information about transaction
@@ -58,8 +60,21 @@ public class TransactionService implements ITransactionService{
             } catch (DataIntegrityViolationException ex) {
                 throw new BadRequestException("Data Integrity Violated");
             } catch (Exception ex) {
-                throw new BadRequestException("Ocorred an exception");
+                throw new BadRequestException("Occurred an exception");
             }
+        }
+    }
+
+    @Override
+    public Collection<TransactionFinalDTO> getAllTransactionByUserId(Integer idUser) {
+        final Collection<Transaction> transaction = this.transactionRepository.findByUserId(idUser);
+
+        if (transaction.isEmpty()) {
+            throw new BadRequestException("Occurred a problem into return of data");
+        } else {
+            return transaction.stream()
+                    .map(it -> transactionValidator.obtainDTOTransaction(it))
+                    .collect(Collectors.toList());
         }
     }
 

@@ -4,6 +4,7 @@ import br.com.conversormoeda.apicoinconverter.dto.TransactionFinalDTO;
 import br.com.conversormoeda.apicoinconverter.model.Transaction;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 
 /**
  * Interface responsible for ensuring transaction service subscriptions
@@ -18,4 +19,11 @@ public interface ITransactionService {
      * @return {@link Transaction}
      */
     TransactionFinalDTO processTransactionDTO(final Integer idUser, final String coinDestiny, final BigDecimal value);
+
+    /**
+     * Get list of transaction by user
+     *
+     * @return {@link Collection<Transaction>}
+     */
+    Collection<TransactionFinalDTO> getAllTransactionByUserId(final Integer idUser);
 }
