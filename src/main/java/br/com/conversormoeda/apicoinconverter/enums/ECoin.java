@@ -6,5 +6,5 @@ package br.com.conversormoeda.apicoinconverter.enums;
  * @author mcrj
  */
 public enum ECoin {
-    BRL, USD, EUR, JPY;
+    BRL, USD, EUR, JPY
 }
