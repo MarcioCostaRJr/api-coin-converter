@@ -91,3 +91,9 @@ mvn spring-boot:run
 - Just acess the endpoint /swagger-ui/# 
 ```
 
+### Integrated Tests
+
+#### Collection / Request
+
+For this project, the integrated tests made available through a file that contains information, request and others.
+The tests are available in a folder called **Integrated_Tests** in the project root.
