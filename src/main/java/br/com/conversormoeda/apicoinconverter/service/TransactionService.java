@@ -45,6 +45,10 @@ public class TransactionService implements ITransactionService{
 
     @SuppressWarnings("unused")
     @Autowired
+    private RestTemplate restTemplate;
+
+    @SuppressWarnings("unused")
+    @Autowired
     private DateUtil dateUtil;
 
     @Override
@@ -102,7 +106,7 @@ public class TransactionService implements ITransactionService{
      */
     private ResponseEntity<MonetaryRateDTO> obtainResponseMonetaryRate() {
         try {
-            return new RestTemplate().getForEntity(API_URL, MonetaryRateDTO.class);
+            return restTemplate.getForEntity(API_URL, MonetaryRateDTO.class);
         } catch (Exception ex) {
             throw new BadRequestException("Service is down");
         }
