@@ -4,10 +4,14 @@ import br.com.conversormoeda.apicoinconverter.dto.TransactionFinalDTO;
 import br.com.conversormoeda.apicoinconverter.model.Transaction;
 import br.com.conversormoeda.apicoinconverter.security.BadRequestException;
 import br.com.conversormoeda.apicoinconverter.service.ITransactionService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -23,7 +27,11 @@ import java.util.Objects;
  */
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping({"/transaction"})
+@RequestMapping(value = {"/transaction"}, produces = MediaType.APPLICATION_JSON_VALUE)
+@ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Successfully transaction"),
+        @ApiResponse(code = 400, message = "Occurred a fail trying to reach the result")
+})
 public class TransactionController {
 
     private static final String NAME_CLASS = Transaction.class.getSimpleName();
@@ -34,10 +42,11 @@ public class TransactionController {
     @Autowired
     private ITransactionService transactionService;
 
+    @ApiOperation(value = "View transaction processed by currency conversion", response = TransactionFinalDTO.class)
     @GetMapping("/{idUser}/{coinDestiny}/{value}")
     public ResponseEntity<TransactionFinalDTO> getCoinConverter(final @PathVariable Integer idUser,
                                                         final @PathVariable String coinDestiny,
-                                                        final @PathVariable BigDecimal value) throws BadRequestException {
+                                                        final @PathVariable BigDecimal value) {
 
         try {
             logger.info("Coin converter for transaction DTO");
@@ -52,6 +61,8 @@ public class TransactionController {
         }
     }
 
+    @ApiOperation(value = "View all transaction processed by user ID", response = TransactionFinalDTO.class
+            , responseContainer = "List")
     @GetMapping("/{idUser}")
     public ResponseEntity<Collection<TransactionFinalDTO>> getAllTransactionByUser(final @PathVariable Integer idUser) {
         try {
