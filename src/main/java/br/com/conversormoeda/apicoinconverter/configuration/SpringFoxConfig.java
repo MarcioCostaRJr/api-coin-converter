@@ -9,6 +9,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 
 import java.util.Collections;
 
+import static java.lang.Boolean.FALSE;
 import static springfox.documentation.builders.PathSelectors.regex;
 import static springfox.documentation.builders.RequestHandlerSelectors.basePackage;
 
@@ -41,6 +42,7 @@ public class SpringFoxConfig {
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
+                .useDefaultResponseMessages(FALSE)
                 .select()
                 .apis(basePackage(BASE_PACK))
                 .paths(regex(BASE_PATH))
