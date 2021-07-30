@@ -19,7 +19,7 @@ import static springfox.documentation.builders.RequestHandlerSelectors.basePacka
  * @author mcrj
  */
 @Configuration
-public class SpringFoxConfig {
+public class SwaggerConfig {
 
     private static final String BASE_PACK = "br.com.conversormoeda.apicoinconverter.controller";
     private static final String BASE_PATH = "/transaction.*";
