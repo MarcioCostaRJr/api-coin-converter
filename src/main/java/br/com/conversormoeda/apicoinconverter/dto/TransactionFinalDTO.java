@@ -6,8 +6,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -20,8 +18,6 @@ import java.time.LocalDateTime;
  */
 @Builder
 @Data
-@ToString
-@EqualsAndHashCode
 @ApiModel("TransactionDTO")
 public class TransactionFinalDTO implements Serializable {
 
