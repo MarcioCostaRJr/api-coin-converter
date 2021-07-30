@@ -36,9 +36,5 @@
         <appender-ref ref="Console" />
     </root>
 
-    <logger name="br.com.conversormoeda.apicoinconverter.controller" level="error" additivity="false">
-        <appender-ref ref="File" />
-        <appender-ref ref="Console" />
-    </logger>
 
 </configuration>
