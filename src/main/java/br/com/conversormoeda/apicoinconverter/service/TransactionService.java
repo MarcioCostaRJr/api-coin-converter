@@ -2,23 +2,26 @@ package br.com.conversormoeda.apicoinconverter.service;
 
 import br.com.conversormoeda.apicoinconverter.dto.MonetaryRateDTO;
 import br.com.conversormoeda.apicoinconverter.dto.TransactionFinalDTO;
+import br.com.conversormoeda.apicoinconverter.enums.ECoin;
 import br.com.conversormoeda.apicoinconverter.model.Transaction;
 import br.com.conversormoeda.apicoinconverter.repository.ITransactionRepository;
-import br.com.conversormoeda.apicoinconverter.security.BadRequestException;
 import br.com.conversormoeda.apicoinconverter.util.DateUtil;
 import br.com.conversormoeda.apicoinconverter.validator.TransactionValidator;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.stream.Collectors;
+
+import static org.springframework.http.HttpStatus.*;
 
 /**
  * Service for to direction information about transaction
@@ -26,8 +29,10 @@ import java.util.stream.Collectors;
  * @author mcrj
  */
 @Service
+@RequiredArgsConstructor
 public class TransactionService implements ITransactionService{
 
+    private static final String NAME_CLASS = Transaction.class.getSimpleName();
     private static final String API_KEY = "21738ea68dddb7bf9847bf64728a8e10";
     private static final String API_PARAM_DEFAULT = "&base=EUR&symbols=BRL,USD,EUR,JPY";
     private static final String API_URL = "http://api.exchangeratesapi.io/v1/latest?access_key=".concat(API_KEY)
@@ -35,24 +40,18 @@ public class TransactionService implements ITransactionService{
 
     Logger logger = LoggerFactory.getLogger(TransactionService.class);
 
-    @SuppressWarnings("unused")
-    @Autowired
     private ITransactionRepository transactionRepository;
 
-    @SuppressWarnings("unused")
-    @Autowired
     private TransactionValidator transactionValidator;
 
-    @SuppressWarnings("unused")
-    @Autowired
     private RestTemplate restTemplate;
 
-    @SuppressWarnings("unused")
-    @Autowired
     private DateUtil dateUtil;
 
+
     @Override
-    public TransactionFinalDTO processTransactionDTO(final Integer idUser, final String coinDestiny, final BigDecimal value) {
+    public TransactionFinalDTO processTransactionDTO(final Integer idUser, final ECoin coinDestiny,
+                                                     final BigDecimal value) {
         logger.info("Process to generate transaction by API started");
         ResponseEntity<MonetaryRateDTO> responseEntity = this.obtainResponseMonetaryRate();
 
@@ -61,16 +60,10 @@ public class TransactionService implements ITransactionService{
         } else {
             final Transaction transactionConverted =
                     transactionValidator.obtainDTOFromObj(responseEntity.getBody(), idUser, coinDestiny, value);
-            try {
-                final Transaction savedTransaction = this.save(transactionConverted);
 
-                return transactionValidator.obtainDTOTransaction(savedTransaction);
+            final Transaction savedTransaction = this.save(transactionConverted);
 
-            } catch (DataIntegrityViolationException ex) {
-                throw new BadRequestException("Data Integrity Violated");
-            } catch (Exception ex) {
-                throw new BadRequestException("Occurred an exception");
-            }
+            return transactionValidator.obtainDTOTransaction(savedTransaction);
         }
     }
 
@@ -80,7 +73,8 @@ public class TransactionService implements ITransactionService{
         final Collection<Transaction> transaction = this.transactionRepository.findByUserId(idUser);
 
         if (transaction.isEmpty()) {
-            throw new BadRequestException("Occurred a problem into return of data");
+            logger.error(NAME_CLASS.concat(" - ").concat("Occurred a problem into return of data"));
+            throw new ResponseStatusException(NO_CONTENT, "Occurred a problem into return of data");
         } else {
             return transaction.stream()
                     .map(it -> transactionValidator.obtainDTOTransaction(it))
@@ -96,7 +90,15 @@ public class TransactionService implements ITransactionService{
      */
     private Transaction save(final Transaction transaction){
         logger.info("Process to save the transaction");
-        return this.transactionRepository.save(transaction);
+        try {
+            return this.transactionRepository.save(transaction);
+        } catch (DataIntegrityViolationException ex) {
+            logger.error(NAME_CLASS.concat(" - ").concat(ex.toString()));
+            throw new ResponseStatusException(FORBIDDEN, "Data Integrity Violated", ex);
+        } catch (Exception ex) {
+            logger.error(NAME_CLASS.concat(" - ").concat(ex.toString()));
+            throw new ResponseStatusException(BAD_REQUEST, "Occurred an exception", ex);
+        }
     }
 
     /**
@@ -108,7 +110,8 @@ public class TransactionService implements ITransactionService{
         try {
             return restTemplate.getForEntity(API_URL, MonetaryRateDTO.class);
         } catch (Exception ex) {
-            throw new BadRequestException("Service is down");
+            logger.error(NAME_CLASS.concat(" - ").concat("Service is down"));
+            throw new ResponseStatusException(BAD_REQUEST, "Service is down");
         }
     }
 }

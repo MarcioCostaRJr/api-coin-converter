@@ -1,9 +1,8 @@
 package br.com.conversormoeda.apicoinconverter.controller;
 
+import br.com.conversormoeda.apicoinconverter.dto.RequestCoinDTO;
 import br.com.conversormoeda.apicoinconverter.dto.TransactionFinalDTO;
-import br.com.conversormoeda.apicoinconverter.security.BadRequestException;
 import br.com.conversormoeda.apicoinconverter.service.ITransactionService;
-import org.apache.logging.log4j.util.Strings;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,9 +17,13 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 
+import static br.com.conversormoeda.apicoinconverter.enums.ECoin.BRL;
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.OK;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TransactionControllerTest {
@@ -31,41 +34,49 @@ public class TransactionControllerTest {
     @Mock
     private ITransactionService transactionService;
 
+    private RequestCoinDTO coinDTO;
+
     @Before
     public void setUp() {
-        when(transactionService.processTransactionDTO(anyInt(), anyString(), any()))
+        when(transactionService.processTransactionDTO(anyInt(), any(), any()))
                 .thenReturn(TransactionFinalDTO.builder().build());
         when(transactionService.getAllTransactionByUserId(anyInt()))
                 .thenReturn(Collections.singletonList(TransactionFinalDTO.builder().build()));
+
+        coinDTO = RequestCoinDTO.builder()
+                .coinDestiny(BRL)
+                .userId(1)
+                .value(BigDecimal.TEN)
+                .build();
     }
 
     @Test
     public void testGetCoinConverter_whenReturnNotEmpty_thenResponse200() {
-        final ResponseEntity<TransactionFinalDTO> returnDTO = transactionController.getCoinConverter(1, Strings.EMPTY, BigDecimal.ONE);
-        assertEquals(HttpStatus.OK, returnDTO.getStatusCode());
+        final ResponseEntity<TransactionFinalDTO> returnDTO = transactionController.getCoinConverter(coinDTO);
+        assertEquals(OK, returnDTO.getStatusCode());
         assertNotNull(returnDTO.getBody());
     }
 
     @Test
     public void testGetCoinConverter_whenReturnNull_thenResponseBadRequest() {
-        when(transactionService.processTransactionDTO(anyInt(), anyString(), any()))
+        when(transactionService.processTransactionDTO(anyInt(), any(), any()))
                 .thenReturn(null);
-        final ResponseEntity<TransactionFinalDTO> returnDTO = transactionController.getCoinConverter(1, Strings.EMPTY, BigDecimal.ONE);
-        assertEquals(HttpStatus.BAD_REQUEST, returnDTO.getStatusCode());
+        final ResponseEntity<TransactionFinalDTO> returnDTO = transactionController.getCoinConverter(coinDTO);
+        assertEquals(BAD_REQUEST, returnDTO.getStatusCode());
         assertNull(returnDTO.getBody());
     }
 
     @Test(expected = ResponseStatusException.class)
     public void testGetCoinConverter_whenBadRequestException_thenResponseStatusException() {
-        when(transactionService.processTransactionDTO(anyInt(), anyString(), any()))
-                .thenThrow(new BadRequestException(Strings.EMPTY));
-        transactionController.getCoinConverter(1, Strings.EMPTY, BigDecimal.ONE);
+        when(transactionService.processTransactionDTO(anyInt(), any(), any()))
+                .thenThrow(new ResponseStatusException(BAD_REQUEST));
+        transactionController.getCoinConverter(coinDTO);
     }
 
     @Test
     public void testGetAllTransactionByUser_whenReturnNotEmpty_thenResponse200() {
         final ResponseEntity<Collection<TransactionFinalDTO>> returnDTO = transactionController.getAllTransactionByUser(1);
-        assertEquals(HttpStatus.OK, returnDTO.getStatusCode());
+        assertEquals(OK, returnDTO.getStatusCode());
         assertNotNull(returnDTO.getBody());
     }
 
@@ -73,14 +84,14 @@ public class TransactionControllerTest {
     public void testGetAllTransactionByUser_whenReturnIsEmpty_thenResponseBodyNull() {
         when(transactionService.getAllTransactionByUserId(anyInt())).thenReturn(Collections.emptyList());
         final ResponseEntity<Collection<TransactionFinalDTO>> returnDTO = transactionController.getAllTransactionByUser(1);
-        assertEquals(HttpStatus.BAD_REQUEST, returnDTO.getStatusCode());
+        assertEquals(BAD_REQUEST, returnDTO.getStatusCode());
         assertNull(returnDTO.getBody());
     }
 
     @Test(expected = ResponseStatusException.class)
     public void testGetAllTransactionByUser_whenBadRequestException_thenResponseStatusException() {
         when(transactionService.getAllTransactionByUserId(anyInt()))
-            .thenThrow(new BadRequestException(Strings.EMPTY));
+            .thenThrow(new ResponseStatusException(BAD_REQUEST));
         transactionController.getAllTransactionByUser(1);
     }
 }

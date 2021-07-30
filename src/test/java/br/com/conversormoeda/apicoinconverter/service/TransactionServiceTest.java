@@ -5,7 +5,6 @@ import br.com.conversormoeda.apicoinconverter.dto.TransactionFinalDTO;
 import br.com.conversormoeda.apicoinconverter.enums.ECoin;
 import br.com.conversormoeda.apicoinconverter.model.Transaction;
 import br.com.conversormoeda.apicoinconverter.repository.ITransactionRepository;
-import br.com.conversormoeda.apicoinconverter.security.BadRequestException;
 import br.com.conversormoeda.apicoinconverter.validator.TransactionValidator;
 import org.apache.logging.log4j.util.Strings;
 import org.junit.Before;
@@ -18,11 +17,13 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 
+import static br.com.conversormoeda.apicoinconverter.enums.ECoin.BRL;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -43,17 +44,17 @@ public class TransactionServiceTest {
     public void setUp() {
         Map<String, BigDecimal> ratesMap = new HashMap<>();
         ratesMap.put(ECoin.USD.name(), BigDecimal.ONE);
-        ratesMap.put(ECoin.BRL.name(), BigDecimal.TEN);
+        ratesMap.put(BRL.name(), BigDecimal.TEN);
 
         when(restTemplate.getForEntity(anyString(), any())).thenReturn(
                 new ResponseEntity<>(new MonetaryRateDTO(Boolean.TRUE, ECoin.EUR, LocalDate.now(),
                 1L, ratesMap), HttpStatus.OK));
     }
 
-    @Test(expected = BadRequestException.class)
-    public void testProcessTransactionDTO_whenException_thenReturnBadRequest() {
+    @Test(expected = ResponseStatusException.class)
+    public void testProcessTransactionDTO_whenException_thenResponseStatusException() {
         when(restTemplate.getForEntity(anyString(), any())).thenThrow(new RuntimeException());
-        transactionService.processTransactionDTO(1, Strings.EMPTY, BigDecimal.ONE);
+        transactionService.processTransactionDTO(1, BRL, BigDecimal.ONE);
     }
 
     @Test
@@ -61,22 +62,20 @@ public class TransactionServiceTest {
         when(restTemplate.getForEntity(anyString(), any())).thenReturn(new ResponseEntity<>(new MonetaryRateDTO(),
                 HttpStatus.BAD_REQUEST));
         final TransactionFinalDTO transactionFinalDTO = transactionService.processTransactionDTO(1,
-                Strings.EMPTY, BigDecimal.ONE);
+                BRL, BigDecimal.ONE);
         assertNull(transactionFinalDTO);
     }
 
-    @Test(expected = BadRequestException.class)
-    public void testProcessTransactionDTO_whenDataIntegrityViolationExceptionForSave_thenBadRequestException() {
+    @Test(expected = ResponseStatusException.class)
+    public void testProcessTransactionDTO_whenDataIntegrityViolationExceptionForSave_thenResponseStatusException() {
         when(repository.save(any())).thenThrow(new DataIntegrityViolationException(Strings.EMPTY));
-        transactionService.processTransactionDTO(1,
-                Strings.EMPTY, BigDecimal.ONE);
+        transactionService.processTransactionDTO(1, BRL, BigDecimal.ONE);
     }
 
-    @Test(expected = BadRequestException.class)
-    public void testProcessTransactionDTO_whenRunTimeExceptionForSave_thenBadRequestException() {
+    @Test(expected = ResponseStatusException.class)
+    public void testProcessTransactionDTO_whenRunTimeExceptionForSave_thenResponseStatusException() {
         when(repository.save(any())).thenThrow(new RuntimeException());
-        transactionService.processTransactionDTO(1,
-                Strings.EMPTY, BigDecimal.ONE);
+        transactionService.processTransactionDTO(1, BRL, BigDecimal.ONE);
     }
 
     @Test
@@ -84,7 +83,7 @@ public class TransactionServiceTest {
         when(repository.save(any())).thenReturn(Transaction.builder().build());
         when(transactionValidator.obtainDTOTransaction(any())).thenReturn(TransactionFinalDTO.builder().build());
         final TransactionFinalDTO transactionFinalDTO = transactionService.processTransactionDTO(1,
-                Strings.EMPTY, BigDecimal.ONE);
+                BRL, BigDecimal.ONE);
         assertNotNull(transactionFinalDTO);
     }
 
@@ -97,8 +96,8 @@ public class TransactionServiceTest {
         assertFalse(collectionTransaction.isEmpty());
     }
 
-    @Test(expected = BadRequestException.class)
-    public void testGetAllTransactionByUserId_whenIsEmpty_thenBadRequestException() {
+    @Test(expected = ResponseStatusException.class)
+    public void testGetAllTransactionByUserId_whenIsEmpty_thenResponseStatusException() {
         when(repository.findByUserId(anyInt())).thenReturn(Collections.emptyList());
         transactionService.getAllTransactionByUserId(1);
     }

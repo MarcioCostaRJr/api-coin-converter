@@ -6,10 +6,10 @@ import br.com.conversormoeda.apicoinconverter.enums.ECoin;
 import br.com.conversormoeda.apicoinconverter.model.MonetaryRate;
 import br.com.conversormoeda.apicoinconverter.model.Rate;
 import br.com.conversormoeda.apicoinconverter.model.Transaction;
-import br.com.conversormoeda.apicoinconverter.security.BadRequestException;
 import br.com.conversormoeda.apicoinconverter.util.DateUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -17,16 +17,18 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+
 /**
  * Validator for errors of process the transaction
  *
  * @author mcrj
  */
 @Component
+@RequiredArgsConstructor
 public class TransactionValidator {
 
-    @SuppressWarnings("unused")
-    @Autowired
     private DateUtil dateUtil;
 
     /**
@@ -34,12 +36,13 @@ public class TransactionValidator {
      *
      * @param monetaryRateDTO - DTO of Moneraty Rate
      * @param idUser - User ID
-     * @param coinDestiny - Coin of Destiny
+     * @param coinDestiny - {@link ECoin} Coin of Destiny
      * @param value - Value for convert
      * @return {@link Transaction}
      */
     public Transaction obtainDTOFromObj(final MonetaryRateDTO monetaryRateDTO,
-                                                        final Integer idUser, final String coinDestiny,
+                                                        final Integer idUser,
+                                                        final ECoin coinDestiny,
                                                         final BigDecimal value) {
 
         try {
@@ -48,9 +51,9 @@ public class TransactionValidator {
             return converterMonetaryForTransaction(monetaryRate,
                     idUser, coinDestiny, value);
         } catch (IllegalArgumentException ex) {
-            throw new BadRequestException("Illegal Argument Exception in the process");
+            throw new ResponseStatusException(FORBIDDEN, "Illegal Argument Exception in the process", ex);
         } catch (Exception ex) {
-            throw new BadRequestException("Occurred an exception");
+            throw new ResponseStatusException(BAD_REQUEST, "Occurred an exception", ex);
         }
     }
 
@@ -64,9 +67,9 @@ public class TransactionValidator {
         try {
             return converterObjectToDTO(transaction);
         } catch (IllegalArgumentException ex) {
-            throw new BadRequestException("Illegal Argument Exception in the process");
+            throw new ResponseStatusException(FORBIDDEN, "Illegal Argument Exception in the process", ex);
         } catch (Exception ex) {
-            throw new BadRequestException("Occurred an exception");
+            throw new ResponseStatusException(BAD_REQUEST, "Occurred an exception", ex);
         }
     }
 
@@ -78,7 +81,7 @@ public class TransactionValidator {
      */
     private MonetaryRate converterDTO(final MonetaryRateDTO monetaryRateDTO){
         if (!monetaryRateDTO.isSuccess()){
-            throw new BadRequestException("Occurred an exception about return of API");
+            throw new ResponseStatusException(BAD_REQUEST, "Occurred an exception about return of API");
         }
         final List<Rate> rateList = monetaryRateDTO.getRates().entrySet().stream()
                 .map(rateMap -> Rate.builder()
@@ -104,23 +107,22 @@ public class TransactionValidator {
      * @return {@link Transaction}
      */
     private Transaction converterMonetaryForTransaction(final MonetaryRate monetaryRate,
-                                                        final Integer idUser, final String coinDestiny,
+                                                        final Integer idUser, final ECoin coinDestiny,
                                                         final BigDecimal value){
-        final ECoin coinDest = ECoin.valueOf(coinDestiny);
         Optional<Rate> optRate = monetaryRate.getRate().stream()
-                .filter(rate -> rate.getCoin().equals(coinDest)).findFirst();
+                .filter(rate -> rate.getCoin().equals(coinDestiny)).findFirst();
 
         final Rate rateApi = optRate.orElse(null);
 
         if(Objects.isNull(rateApi)){
-            throw new BadRequestException("Occurred an exception about return of API");
+            throw new ResponseStatusException(BAD_REQUEST, "Occurred an exception about return of API");
         }
 
         return Transaction.builder()
                 .userId(idUser)
                 .originCoin(monetaryRate.getBaseCoin())
                 .valueCoin(value)
-                .destinyCoin(ECoin.valueOf(coinDestiny))
+                .destinyCoin(coinDestiny)
                 .conversionTax(rateApi.getTax())
                 .conversionDateTime(dateUtil.datesTo(monetaryRate.getDate(), monetaryRate.getCurrentTime()))
                 .build();

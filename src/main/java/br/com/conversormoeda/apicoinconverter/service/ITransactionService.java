@@ -1,6 +1,7 @@
 package br.com.conversormoeda.apicoinconverter.service;
 
 import br.com.conversormoeda.apicoinconverter.dto.TransactionFinalDTO;
+import br.com.conversormoeda.apicoinconverter.enums.ECoin;
 import br.com.conversormoeda.apicoinconverter.model.Transaction;
 
 import java.math.BigDecimal;
@@ -18,7 +19,7 @@ public interface ITransactionService {
      *
      * @return {@link Transaction}
      */
-    TransactionFinalDTO processTransactionDTO(final Integer idUser, final String coinDestiny, final BigDecimal value);
+    TransactionFinalDTO processTransactionDTO(final Integer idUser, final ECoin coinDestiny, final BigDecimal value);
 
     /**
      * Get list of transaction by user

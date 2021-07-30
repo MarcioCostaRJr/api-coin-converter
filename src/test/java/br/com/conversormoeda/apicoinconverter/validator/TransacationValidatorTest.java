@@ -5,7 +5,6 @@ import br.com.conversormoeda.apicoinconverter.dto.MonetaryRateDTO;
 import br.com.conversormoeda.apicoinconverter.dto.TransactionFinalDTO;
 import br.com.conversormoeda.apicoinconverter.enums.ECoin;
 import br.com.conversormoeda.apicoinconverter.model.Transaction;
-import br.com.conversormoeda.apicoinconverter.security.BadRequestException;
 import br.com.conversormoeda.apicoinconverter.util.DateUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static br.com.conversormoeda.apicoinconverter.enums.ECoin.BRL;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -33,7 +34,7 @@ public class TransacationValidatorTest {
     private static final int ID = 1;
     private static final int USER_ID = 2;
     private static final ECoin ORIGIN_COIN = ECoin.EUR;
-    private static final ECoin DESTINY_COIN = ECoin.BRL;
+    private static final ECoin DESTINY_COIN = BRL;
     private static final BigDecimal VALUE_COIN = BigDecimal.ONE;
     private static final BigDecimal VALUE_CONVERSION = BigDecimal.TEN;
     private static final LocalDateTime CURRENT_TIME = LocalDateTime.now();
@@ -62,13 +63,13 @@ public class TransacationValidatorTest {
 
         Map<String, BigDecimal> ratesMap = new HashMap<>();
         ratesMap.put(ECoin.USD.name(), BigDecimal.ONE);
-        ratesMap.put(ECoin.BRL.name(), BigDecimal.TEN);
+        ratesMap.put(BRL.name(), BigDecimal.TEN);
         monetaryRateDTO = new MonetaryRateDTO(Boolean.TRUE, ECoin.EUR, LocalDate.now(),
                 1L, ratesMap);
     }
 
-    @Test(expected = BadRequestException.class)
-    public void testObtainDTOTransaction_whenTransactionIsNull_thenBadRequestException(){
+    @Test(expected = ResponseStatusException.class)
+    public void testObtainDTOTransaction_whenTransactionIsNull_thenResponseStatusException(){
         this.transactionValidator.obtainDTOTransaction(null);
     }
 
@@ -78,25 +79,25 @@ public class TransacationValidatorTest {
         this.assertFromExpectedToDTO(transactionFinalDTO);
     }
 
-    @Test(expected = BadRequestException.class)
-    public void testObtainDTOFromObj_whenReturnDTONotSuccess_thenBadRequestException(){
+    @Test(expected = ResponseStatusException.class)
+    public void testObtainDTOFromObj_whenReturnDTONotSuccess_thenResponseStatusException(){
         monetaryRateDTO.setSuccess(Boolean.FALSE);
         this.transactionValidator.obtainDTOFromObj(monetaryRateDTO,
-                1, ECoin.BRL.name(), BigDecimal.ONE);
+                1, BRL, BigDecimal.ONE);
     }
 
-    @Test(expected = BadRequestException.class)
-    public void testObtainDTOFromObj_whenParameterIsWrong_thenBadRequestException(){
+    @Test(expected = ResponseStatusException.class)
+    public void testObtainDTOFromObj_whenParameterIsWrong_thenResponseStatusException(){
         this.transactionValidator.obtainDTOFromObj(monetaryRateDTO,
-                1, "BRLA", BigDecimal.ONE);
+                1, null, BigDecimal.ONE);
     }
 
-    @Test(expected = BadRequestException.class)
-    public void testObtainDTOFromObj_whenIsNotExistRate_thenBadRequestException(){
+    @Test(expected = ResponseStatusException.class)
+    public void testObtainDTOFromObj_whenIsNotExistRate_thenResponseStatusException(){
         monetaryRateDTO.setRates(Collections.emptyMap());
         when(dateUtil.instantTo(anyLong())).thenReturn(LocalTime.now());
         this.transactionValidator.obtainDTOFromObj(monetaryRateDTO,
-                1, ECoin.BRL.name(), BigDecimal.ONE);
+                1, BRL, BigDecimal.ONE);
     }
 
     @Test
@@ -104,7 +105,7 @@ public class TransacationValidatorTest {
         when(dateUtil.instantTo(anyLong())).thenReturn(CURRENT_TIME.toLocalTime());
         when(dateUtil.datesTo(any(LocalDate.class), any(LocalTime.class))).thenReturn(CURRENT_TIME);
         final Transaction transactionRet = this.transactionValidator.obtainDTOFromObj(monetaryRateDTO,
-                USER_ID, ECoin.BRL.name(), BigDecimal.ONE);
+                USER_ID, BRL, BigDecimal.ONE);
         assertFromExpectToTransaction(transactionRet);
     }
 
