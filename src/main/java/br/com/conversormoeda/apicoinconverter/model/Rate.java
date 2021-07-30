@@ -3,8 +3,6 @@ package br.com.conversormoeda.apicoinconverter.model;
 import br.com.conversormoeda.apicoinconverter.enums.ECoin;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 import java.math.BigDecimal;
 
@@ -15,8 +13,6 @@ import java.math.BigDecimal;
  */
 @Builder
 @Data
-@ToString
-@EqualsAndHashCode
 public class Rate {
 
     private ECoin coin;
