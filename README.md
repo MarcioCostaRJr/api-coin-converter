@@ -64,19 +64,19 @@ More information about endpoints, to access:
 #### Build Maven
 ```
 # Simple build
-mvn clean install
+./mvnw clean install
 ```
 
 #### Tests
 ```
 # Unit Tests
-mvn clean test
+./mvnw clean test
 ```
 
 #### Run
 ```
 # Run project
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
 #### Importing to IDE
