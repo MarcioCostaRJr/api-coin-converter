@@ -29,7 +29,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 @RequiredArgsConstructor
 public class TransactionValidator {
 
-    private DateUtil dateUtil;
+    private final DateUtil dateUtil;
 
     /**
      * Get DTO data and other parameters to convert into a transaction

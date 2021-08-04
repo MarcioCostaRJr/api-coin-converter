@@ -40,13 +40,13 @@ public class TransactionService implements ITransactionService{
 
     Logger logger = LoggerFactory.getLogger(TransactionService.class);
 
-    private ITransactionRepository transactionRepository;
+    private final ITransactionRepository transactionRepository;
 
-    private TransactionValidator transactionValidator;
+    private final TransactionValidator transactionValidator;
 
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
-    private DateUtil dateUtil;
+    private final DateUtil dateUtil;
 
 
     @Override

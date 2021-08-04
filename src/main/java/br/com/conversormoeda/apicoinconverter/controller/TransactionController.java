@@ -33,11 +33,11 @@ public class TransactionController {
 
     Logger logger = LoggerFactory.getLogger(TransactionController.class);
 
-    private ITransactionService transactionService;
+    private final ITransactionService transactionService;
 
 
     @ApiOperation(value = "View transaction processed by currency conversion", response = TransactionFinalDTO.class)
-    @PostMapping()
+    @PostMapping
     public ResponseEntity<TransactionFinalDTO> getCoinConverter(final @RequestBody RequestCoinDTO coinDTO) {
 
         logger.info("Coin converter for transaction DTO");
