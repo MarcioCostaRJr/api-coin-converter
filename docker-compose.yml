@@ -1,0 +1,26 @@
+version: '3.4'
+
+services:
+  api-external:
+    image: coin/api-external
+    container_name: api-external
+    build:
+      context: ./api-external
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8090"
+    restart: on-failure
+
+  api-coin-converter:
+    image: coin/api-coin-converter
+    container_name: api-coin-converter
+    build:
+      context: ./api-coin-converter
+      dockerfile: Dockerfile
+    ports:
+      - "8091:8091"
+    depends_on:
+      - api-external
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://discovery:8090/eureka
+      - keycloak-client.server-url=http://192.168.100.48:18080/auth # use host name or ip of the host machine

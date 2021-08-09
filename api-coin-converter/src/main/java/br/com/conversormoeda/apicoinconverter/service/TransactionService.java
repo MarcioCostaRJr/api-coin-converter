@@ -33,11 +33,6 @@ import static org.springframework.http.HttpStatus.*;
 public class TransactionService implements ITransactionService{
 
     private static final String NAME_CLASS = Transaction.class.getSimpleName();
-    private static final String API_KEY = "21738ea68dddb7bf9847bf64728a8e10";
-    private static final String API_PARAM_DEFAULT = "&base=EUR&symbols=BRL,USD,EUR,JPY";
-    private static final String API_URL = "http://api.exchangeratesapi.io/v1/latest?access_key=".concat(API_KEY)
-            .concat(API_PARAM_DEFAULT);
-
     Logger logger = LoggerFactory.getLogger(TransactionService.class);
 
     private final ITransactionRepository transactionRepository;
@@ -107,6 +102,8 @@ public class TransactionService implements ITransactionService{
      * @return {@link ResponseEntity<MonetaryRateDTO>}
      */
     private ResponseEntity<MonetaryRateDTO> obtainResponseMonetaryRate() {
+        final String API_URL = "http://api-external:8090/external";
+
         try {
             return restTemplate.getForEntity(API_URL, MonetaryRateDTO.class);
         } catch (Exception ex) {
