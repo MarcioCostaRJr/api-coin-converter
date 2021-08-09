@@ -21,6 +21,8 @@ jobs:
       with:
         java-version: '8.0.292+10'
         distribution: 'adopt'
+    - name: Compile with Maven
+      run: mvn compile --file pom.xml
     - name: Test with Maven
       run: mvn test --file pom.xml
     - name: Build with Maven
